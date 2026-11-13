@@ -33,3 +33,17 @@ resource "aws_iam_role_policy_attachment" "extract_basic_execution" {
     role = aws_iam_role.extract_lambda_role.id
     policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
+
+data "aws_iam_policy_document" "extract_s3_write" {
+    statement {
+        effect    = "Allow"
+        actions   = ["s3:PutObject"]
+        resources = ["${var.raw_bucket_arn}/raw/*"]
+    }
+}
+
+resource "aws_iam_role_policy" "extract_s3_write" {
+    name  = "extract-s3-write-access"
+    role  = aws_iam_role.extract_lambda_role.id
+    policy = data.aws_iam_policy_document.extract_s3_write.json
+}

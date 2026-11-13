@@ -11,7 +11,7 @@ module "lambda_function" {
     create_role = false
     lambda_role = var.extract_lambda_role_arn
 
-    timeout = 30
+    timeout = 60
     memory_size = 256
     
     environment_variables = {
