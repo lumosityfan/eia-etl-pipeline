@@ -47,3 +47,42 @@ resource "aws_iam_role_policy" "extract_s3_write" {
     role  = aws_iam_role.extract_lambda_role.id
     policy = data.aws_iam_policy_document.extract_s3_write.json
 }
+
+resource "aws_iam_role" "transform_lambda_role" {
+    name = "transform-lambda-role"
+
+    assume_role_policy = jsonencode({
+        "Version": "2012-10-17",
+        "Statement": [{
+            "Effect": "Allow",
+            "Principal": { 
+                "Service": "lambda.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }]
+    })
+}
+
+resource "aws_iam_role_policy_attachment" "transform_basic_execution" {
+    role       = aws_iam_role.transform_lambda_role.id
+    policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+data "aws_iam_policy_document" "transform_s3_access" {
+    statement {
+        effect   = "Allow"
+        actions  = ["s3:GetObject", "s3:ListBucket"]
+        resources = [var.raw_bucket_arn, "${var.raw_bucket_arn}/raw/*"]
+    }
+    statement {
+        effect   = "Allow"
+        actions  = ["s3:PutObject"]
+        resources = ["${var.processed_bucket_arn}/processed/*"]
+    }
+}
+
+resource "aws_iam_role_policy" "transform_s3_access" {
+    name   = "transform-s3-access"
+    role   = aws_iam_role.transform_lambda_role.id
+    policy = data.aws_iam_policy_document.transform_s3_access.json
+}

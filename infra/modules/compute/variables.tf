@@ -12,3 +12,16 @@ variable "extract_lambda_role_arn" {
     description = "ARN of the extract lambda role in IAM"
     type        = string
 }
+
+variable "processed_bucket_name" {
+    type = string
+}
+
+variable "transform_lambda_role_arn" {
+    type = string
+}
+
+variable "pandas_layer_arn" {
+    description = "ARN of the AWS SDK for pandas layer (pandas + pyarrow) for this region/Python version"
+    type        = string
+}

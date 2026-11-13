@@ -1,4 +1,4 @@
-module "lambda_function" {
+module "extract_lambda_function" {
     source = "terraform-aws-modules/lambda/aws"
 
     function_name = "extract-lambda"
@@ -20,5 +20,33 @@ module "lambda_function" {
     }
     tags = {
         Name = "extract-lambda"
+    }
+}
+
+module "transform_lambda_function" {
+    source = "terraform-aws-modules/lambda/aws"
+
+    function_name = "transform-lambda"
+    description   = "Transform Lambda function"
+    handler       = "transform_lambda.lambda_handler"
+    runtime       = "python3.12"
+
+    source_path = "../pipeline/transform/transform_lambda.py"
+
+    create_role = false
+    lambda_role = var.transform_lambda_role_arn
+
+    layers = [var.pandas_layer_arn]
+    
+    timeout     = 60
+    memory_size = 512
+
+    environment_variables = {
+        RAW_BUCKET       = var.raw_bucket_name
+        PROCESSED_BUCKET = var.processed_bucket_name
+    }
+
+    tags = {
+        Name = "transform-lambda"
     }
 }
