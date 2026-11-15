@@ -13,6 +13,7 @@ module "compute" {
   load_lambda_role_arn      = module.iam.load_lambda_role_arn
   db_host                   = module.database.db_host
   db_name                   = module.database.db_name
+  sns_topic_arn             = module.messaging.topic_arn
 }
 
 module "iam" {
@@ -21,6 +22,7 @@ module "iam" {
   raw_bucket_arn       = module.storage.raw_bucket_arn
   processed_bucket_arn = module.storage.processed_bucket_arn
   db_resource_id       = module.database.db_resource_id
+  sns_topic_arn        = module.messaging.topic_arn
 }
 
 module "database" {
@@ -29,4 +31,9 @@ module "database" {
 
 module "secrets" {
   source = "./modules/secrets"
+}
+
+module "messaging" {
+  source             = "./modules/messaging"
+  notification_email = var.notification_email
 }

@@ -117,6 +117,11 @@ data "aws_iam_policy_document" "load_access" {
         actions   = ["rds-db:connect"]
         resources = ["arn:aws:rds-db:us-east-1:${data.aws_caller_identity.current.account_id}:dbuser:${var.db_resource_id}/load_lambda_user"]
     }
+    statement {
+        effect    = "Allow"
+        actions   = ["sns:Publish"]
+        resources = [var.sns_topic_arn]
+    }
 }
 
 data "aws_caller_identity" "current" {}
@@ -126,4 +131,3 @@ resource "aws_iam_role_policy" "load_access" {
     role   = aws_iam_role.load_lambda_role.id
     policy = data.aws_iam_policy_document.load_access.json
 }
-

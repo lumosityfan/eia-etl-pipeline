@@ -74,6 +74,7 @@ module "load_lambda_function" {
     DB_PORT          = "5432"
     DB_NAME          = var.db_name
     DB_USER          = "load_lambda_user"
+    SNS_TOPIC_ARN    = var.sns_topic_arn
   }
 
   tags = { Name = "load-lambda" }

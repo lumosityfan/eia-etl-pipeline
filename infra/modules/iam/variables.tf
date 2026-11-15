@@ -17,3 +17,8 @@ variable "db_resource_id" {
     description = "DB Resource ID"
     type        = string
 }
+
+variable "sns_topic_arn" {
+    description = "SNS Topic ARN"
+    type        = string
+}

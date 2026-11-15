@@ -37,3 +37,7 @@ variable "db_host" {
 variable "db_name" {
     type = string
 }
+
+variable "sns_topic_arn" {
+    type = string
+}
