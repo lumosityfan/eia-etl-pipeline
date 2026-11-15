@@ -50,3 +50,31 @@ module "transform_lambda_function" {
         Name = "transform-lambda"
     }
 }
+
+module "load_lambda_function" {
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 7.0"
+
+  function_name = "load-lambda"
+  description   = "Load Lambda function"
+  handler       = "load_lambda.lambda_handler"
+  runtime       = "python3.12"
+  source_path   = "../pipeline/load"
+  timeout       = 60
+  memory_size   = 512
+
+  create_role = false
+  lambda_role = var.load_lambda_role_arn
+
+  layers = [var.pandas_layer_arn]
+
+  environment_variables = {
+    PROCESSED_BUCKET = var.processed_bucket_name
+    DB_HOST          = var.db_host
+    DB_PORT          = "5432"
+    DB_NAME          = var.db_name
+    DB_USER          = "load_lambda_user"
+  }
+
+  tags = { Name = "load-lambda" }
+}

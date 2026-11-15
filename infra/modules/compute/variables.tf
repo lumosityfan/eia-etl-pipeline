@@ -25,3 +25,15 @@ variable "pandas_layer_arn" {
     description = "ARN of the AWS SDK for pandas layer (pandas + pyarrow) for this region/Python version"
     type        = string
 }
+
+variable "load_lambda_role_arn" {
+    type = string
+}
+
+variable "db_host" {
+    type = string
+}
+
+variable "db_name" {
+    type = string
+}

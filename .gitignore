@@ -24,3 +24,13 @@ __pycache__/
 .vscode/
 .DS_Store
 *.parquet
+/pipeline/load/asn1crypto-1.5.1.dist-info
+/pipeline/load/asn1crypto
+/pipeline/load/dateutil
+/pipeline/load/pg8000-1.31.6.dist-info
+/pipeline/load/pg8000
+/pipeline/load/python_dateutil-4.0.0.dist-info
+/pipeline/load/scramp-1.5.0.dist-info
+/pipeline/load/scramp
+/pipeline/load/tzdata-2026.6.dist-info
+/pipeline/load/tzdata

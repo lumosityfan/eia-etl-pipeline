@@ -12,3 +12,8 @@ variable "processed_bucket_arn" {
     description = "ARN of the S3 bucket the transform Lambda writes curated data to"
     type        = string
 }
+
+variable "db_resource_id" {
+    description = "DB Resource ID"
+    type        = string
+}
