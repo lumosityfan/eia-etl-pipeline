@@ -137,9 +137,7 @@ By default each step picks up the most recent file from the previous stage. You 
 | Terraform remote state (S3 backend + DynamoDB lock) | 🔜 Planned |
 | Architecture write-up / blog post on the tradeoffs | 🔜 Planned |
 
-### Known limitations (deliberate for now)
-
-I'm calling these out so they're not mistaken for oversights:
+### Known limitations
 
 - **The database is publicly reachable.** To keep the Lambdas outside a VPC (and avoid NAT gateway cost during development), the RDS instance accepts connections on port 5432 from anywhere. Access is gated by IAM authentication and enforced SSL, but the proper fix is to move the Lambdas into the VPC (or use RDS Proxy) and close the security group. This is the first thing I'd change before treating the project as production-like.
 - **State is local for now.** `backend.tf` is intentionally empty until the S3 + DynamoDB remote-state backend is set up.
