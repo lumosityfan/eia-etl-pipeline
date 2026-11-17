@@ -57,7 +57,11 @@ flowchart LR
 │       ├── secrets/             # Secrets Manager container for the API key
 │       ├── database/            # RDS Postgres 16, parameter group, security group
 │       └── messaging/           # SNS topic + email subscription
-└── dags/                        # Airflow DAG (planned)
+├── dags/
+│   └── eia_pipeline_dag.py      # Airflow DAG: extract → validate → transform → validate → load
+├── docker-compose.yaml          # self-hosted Airflow (Docker Compose, CeleryExecutor)
+├── Dockerfile                   # extends the Airflow image with apache-airflow-providers-amazon
+└── requirements.txt             # Airflow image dependency: apache-airflow-providers-amazon
 ```
 
 ## Getting started
@@ -69,7 +73,7 @@ flowchart LR
 **1. Vendor the Postgres driver for the load Lambda** (the pandas/pyarrow layer is supplied by AWS; `pg8000` is not):
 
 ```bash
-pip install pg8000 -t pipeline/load
+pip install -r pipeline/load/requirements.txt -t pipeline/load
 ```
 
 **2. Deploy the infrastructure**
@@ -120,6 +124,17 @@ aws lambda invoke --region us-east-1 --function-name load-lambda      /dev/stdou
 
 By default each step picks up the most recent file from the previous stage. You can also pass `{"s3_key": "..."}` as the event to process a specific file.
 
+**6. (Optional) Orchestrate with Airflow instead of invoking Lambdas by hand:**
+
+```bash
+echo "AIRFLOW_UID=$(id -u)" > .env
+echo "FERNET_KEY=$(python3 -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" >> .env
+docker compose up airflow-init
+docker compose up -d
+```
+
+Open the UI at `localhost:8080`, unpause `eia_pipeline_dag`, and trigger a run. The DAG chains extract → validate → transform → validate → load, retries each Lambda invoke twice with backoff, and emails on any task failure via the SNS topic set up in step 2.
+
 **Configuration.** The extract Lambda reads `EIA_RESPONDENTS` (default `NY`) and `EIA_TYPES` (default `D,DF`). To add regions, copy the respondent codes from the [EIA API browser](https://www.eia.gov/opendata/browser/electricity/rto/region-data).
 
 ## Status and roadmap
@@ -131,7 +146,7 @@ By default each step picks up the most recent file from the previous stage. You 
 | Transform Lambda (pivot, forecast error, Parquet) | ✅ Built |
 | Load Lambda (idempotent upsert, IAM DB auth) | ✅ Built |
 | SNS success/failure notifications | ✅ Built |
-| Airflow orchestration (DAG with retries and failure callbacks) | 🔜 Next |
+| Airflow orchestration (DAG with retries and failure callbacks) | ✅ Built |
 | Unit tests on real edge-case API data; integration tests | 🔜 Next |
 | Dashboard (Streamlit) on top of Postgres | 🔜 Planned |
 | Terraform remote state (S3 backend + DynamoDB lock) | 🔜 Planned |
@@ -143,12 +158,11 @@ By default each step picks up the most recent file from the previous stage. You 
 - **State is local for now.** `backend.tf` is intentionally empty until the S3 + DynamoDB remote-state backend is set up.
 - **Row-by-row upserts.** Fine at this volume (a few hundred rows per run). A bulk `INSERT ... ON CONFLICT` or `COPY` into a staging table would be the next step for larger loads.
 - **"Latest file" selection.** Transform and load pick the most recently written object when no key is passed. Airflow will pass explicit keys between tasks.
-- **Dependencies are not pinned yet.** A `requirements.txt` for the load Lambda is on the to-do list.
 - **The table DDL lives in this README,** not in a migration. A `sql/schema.sql` is on the to-do list.
 
 ## Tech stack
 
-Python 3.12 · AWS Lambda · S3 · RDS PostgreSQL 16 · Secrets Manager · SNS · IAM · Terraform · pandas / pyarrow · pg8000 · Apache Airflow *(planned)*
+Python 3.12 · AWS Lambda · S3 · RDS PostgreSQL 16 · Secrets Manager · SNS · IAM · Terraform · pandas / pyarrow · pg8000 · Apache Airflow (Docker Compose, CeleryExecutor)
 
 ## Data source
 
