@@ -34,3 +34,8 @@ __pycache__/
 /pipeline/load/scramp
 /pipeline/load/tzdata-2026.6.dist-info
 /pipeline/load/tzdata
+
+# Airflow local dev
+.env
+logs/
+config/
